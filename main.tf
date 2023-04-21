@@ -83,30 +83,37 @@ module "eks" {
 }
     
 
-# https://aws.amazon.com/blogs/containers/amazon-ebs-csi-driver-is-now-generally-available-in-amazon-eks-add-ons/ 
-data "aws_iam_policy" "ebs_csi_policy" {
-  arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
-}
+# https://aws.amazon.com/blogs/containers/amazon-ebs-csi-driver-is-now-generally-available-in-amazon-eks-add-ons/
+#data "aws_iam_policy" "ebs_csi_policy" {
+#  arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
+#}
 
-module "irsa-ebs-csi" {
-  source  = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
-  version = "4.7.0"
+# https://dev.to/aws-builders/install-manage-amazon-eks-add-ons-with-terraform-2dea
+# The Amazon Elastic Block Store (Amazon EBS) Container Storage Interface (CSI) driver allows Amazon Elastic Kubernetes Service (Amazon EKS) clusters to manage the lifecycle of Amazon EBS volumes for persistent volumes.
+# Reference: https://docs.aws.amazon.com/eks/latest/userguide/ebs-csi.html
+# https://docs.aws.amazon.com/eks/latest/userguide/managing-ebs-csi.html
+# Amazon EKS automatically installs self-managed add-ons such as the Amazon VPC CNI, kube-proxy, and CoreDNS for every cluster, but you can change the default configuration of the add-ons and update them when desired.
+# Amazon EBS CSI Driver is now available as an Add-on. This Add-on is in preview version with some limitations and inconsistencies. For this reason, its use in Production is not recommended.
 
-  create_role                   = true
-  role_name                     = "AmazonEKSTFEBSCSIRole-${module.eks.cluster_name}"
-  provider_url                  = module.eks.oidc_provider
-  role_policy_arns              = [data.aws_iam_policy.ebs_csi_policy.arn]
-  oidc_fully_qualified_subjects = ["system:serviceaccount:kube-system:ebs-csi-controller-sa"]
-}
-
-resource "aws_eks_addon" "ebs-csi" {
-  cluster_name             = module.eks.cluster_name
-  addon_name               = "aws-ebs-csi-driver"
-  addon_version            = "v1.5.2-eksbuild.1"
-  service_account_role_arn = module.irsa-ebs-csi.iam_role_arn
-  tags = {
-    "eks_addon" = "ebs-csi"
-    "terraform" = "true"
-  }
-}
-
+#module "irsa-ebs-csi" {
+#  source  = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
+#  version = "4.7.0"
+#
+#  create_role                   = true
+#  role_name                     = "AmazonEKSTFEBSCSIRole-${module.eks.cluster_name}"
+#  provider_url                  = module.eks.oidc_provider
+#  role_policy_arns              = [data.aws_iam_policy.ebs_csi_policy.arn]
+#  oidc_fully_qualified_subjects = ["system:serviceaccount:kube-system:ebs-csi-controller-sa"]
+#}
+#
+#resource "aws_eks_addon" "ebs-csi" {
+#  cluster_name             = module.eks.cluster_name
+#  addon_name               = "aws-ebs-csi-driver"
+#  addon_version            = "v1.5.2-eksbuild.1"
+#  service_account_role_arn = module.irsa-ebs-csi.iam_role_arn
+#  tags = {
+#    "eks_addon" = "ebs-csi"
+#    "terraform" = "true"
+#  }
+#}
+#
